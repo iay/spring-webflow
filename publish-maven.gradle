@@ -53,6 +53,19 @@ publishing {
       }
     }
   }
+
+  if (project.name != 'spring-js-resources') {
+    repositories {
+      maven {
+        name = 'shibSnapshots'
+        url = 'https://build.shibboleth.net/nexus-proxy/content/repositories/snapshots'
+        credentials(PasswordCredentials)
+        authentication {
+          basic(BasicAuthentication)
+        }
+      }
+    }
+  }
 }
 
 artifactoryPublish {
