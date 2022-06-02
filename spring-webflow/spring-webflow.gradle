@@ -1,3 +1,7 @@
+plugins {
+  id 'org.hidetake.ssh' version '2.10.1'
+}
+
 description = "Spring Web Flow"
 
 dependencies {
@@ -45,3 +49,30 @@ dependencies {
 	}
 }
 
+remotes {
+	javasites {
+		host = 'build.shibboleth.net'
+		user = 'javasites'
+		def id_name = findProperty('javasitesIdentityFile') ?: 'id_rsa'
+		def id_file = System.properties['user.home'] + '/.ssh/' + id_name
+		identity = file(id_file)
+		passphrase = findProperty('javasitesIdentityPass')
+		knownHosts = file('known_hosts')
+  }
+}
+
+tasks.register('stage-site') {
+	dependsOn javadoc
+	group = 'Publishing'
+	description 'Stages the snapshot Javadoc to build.shibboleth.net'
+	doLast {
+		ssh.run {
+			session(remotes.javasites) {
+				def dir = '/home/javasites/staging/' + project.name + '/' + version
+				remove dir
+				execute("mkdir -p ${dir}")
+				put from: javadoc.destinationDir, into: dir
+			}
+		}
+	}
+}
